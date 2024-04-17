@@ -1,4 +1,29 @@
 # Course-Manager-AVL-Trees
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Description:
-AVL Course Manager is a program designed to maintain information about various courses using AVL trees. The program reads course data from a file named courses.txt and allows users to add new courses along with their relevant information. Courses are entered in a specific format: Course:CreditHours#CourseCode#Department/topic1, topic2, …, topicN. The program supports operations such as reading the course file, inserting new courses, updating course information, listing courses in lexicographic order with their details, listing topics associated with a course, listing courses belonging to the same department, deleting courses, and saving course information to a file named offered_courses.txt. The AVL tree data structure is utilized to efficiently manage and organize the course data, with course code serving as the key for AVL tree operations.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---overview of the functionality implemented in the program---
+
+Main Functionality:
+Reading course data from a file and creating an AVL tree.
+Inserting a new course.
+Finding and updating course information.
+Listing courses in lexicographic order.
+Listing topics associated with a given course.
+Listing all courses from the same department.
+Deleting a course by code, by the first letter of the course name, or by department.
+Saving course data to a file.
+
+AVL Tree Implementation:
+Inserting nodes into the AVL tree based on the course code.
+Deleting nodes while maintaining the AVL tree balance.
+Finding nodes by course code.
+Height calculation and balancing operations (single and double rotations).
+
+File Operations:
+Reading course data from a file (courses.txt).
+Saving course data to a file (offered_courses.txt).
+Menu System and User Interaction:
+Displaying a menu for users to choose from different options.
+Handling user input for various operations.
+
+Stack Implementation:
+Implementing a stack data structure to store course codes for deletion operations.
