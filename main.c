@@ -1,6 +1,6 @@
 //Katya Kobari-1201478
 //Date:28/5/2022.
-//call lip
+//call lib
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
