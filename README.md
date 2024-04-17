@@ -18,7 +18,7 @@ Main Functionality:
 
 - Deleting a course by code, by the first letter of the course name, or by department.
 
--Saving course data to a file.
+- Saving course data to a file.
 
 
 AVL Tree Implementation:
