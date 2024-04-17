@@ -1,6 +1,6 @@
 //Katya Kobari-1201478
 //Date:28/5/2022.
-//call lib
+//call lip
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -660,7 +660,7 @@ AVLNode delCLetter(AVLNode mainTree) { //-->pop from stack then delete node from
     return mainTree;
 }
 
-//------------------------------stack lip-----------------------------
+//------------------------------stack lib-----------------------------
 int isFull() {
     if (top1 == size - 1) { //is full case-> then the top will equal the size-1.
         return 1;
