@@ -1,647 +1,699 @@
-//“P1_1201478_KatyaKobari_3” .
+//Katya Kobari-1201478
+//Date:28/5/2022.
+//call lib
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define size 1000 //size is the maximum number of char that we can read from file.
-typedef struct Bus Bus;
-typedef struct Student Student;
+#define  size 200 //max size of string.
+#define fileSize 100 //size is the maximum number of char that we can read from file.
+typedef struct AVLnode *AVLNode;
+typedef struct Info { //declare struct info that have all data of course.
+    char cName[size];
+    int hours;
+    char cCode[size];
+    char topic[100];
+    char department[size];
+} info;
+struct AVLnode { //declare node struct
+    info data;
+    AVLNode Left;
+    AVLNode Right;
+    int Height; //Balance information
+};
 
-//----------prototype all function in project--------
+//----------------------prototype stack functions-----------------------
+int isempty();
+
+int isFull();
+
+void push();
+
+char *pop();
+
+//----------------------prototype menu options functions---------------------
+int printSameDep(AVLNode mainTree, char dep[size]);
+
+void pushCourseByDep(AVLNode mainTree, char dep[size]);
+
+void pushCourseByLetter(AVLNode mainTree, char x);
+
+AVLNode loadCourses(AVLNode mainTree);
+
+AVLNode delCLetter(AVLNode mainTree);
+
+void creatNameTree(AVLNode mainTree);
+
+void save(AVLNode mainTree);
+
+AVLNode delCDep(AVLNode mainTree);
+
+void printInLexicographicOrder(AVLNode nameT);
+
+AVLNode updateCourse(AVLNode mainTree);
+
+void printPreOrderINFile(AVLNode node);
+
+AVLNode InsertByName(info data, AVLNode T);
+
 void printMenu();
 
-void loadBuses(Bus *bus);
+//--------------------------prototype Avl tree functions---------------
+AVLNode delete(char code[size], AVLNode node);
 
-void loadStudents(Student *mainStudentList);
+AVLNode MakeEmpty(AVLNode T);
 
-void MainAssignStudents(Student *mainStudentList, Bus *bus, Student *unmatchedStu);
+int balance(AVLNode node);
 
-int assignStu(Student *tempStu, Bus *bus);
+AVLNode Find(char code[size], AVLNode T);
 
-int NotOnTimeAssign(Student *tempStu, Bus *tempBus);
+AVLNode FindMin(AVLNode T);
 
-void printSpcBusInfo(Bus *bus, int num);
+AVLNode FindMax(AVLNode T);
 
-void printBusesPassengers(Bus *bus);
+int Height(AVLNode P);
 
-//declare student struct.
-struct Student {
-    int id;
-    int Date;
-    char time[30];
-    char stuFromDes[30];
-    char stuToDes[30];
-    struct Student *Next;
-};
-//declare bus struct.
-struct Bus {
-    int num;
-    int Date;
-    char time[30];
-    char busFromDes[30];
-    char busToDes[30];
-    double price;
-    int capacity;
-    int space; //to know how much available Seating in the bus.
-    struct Bus *Next;
-    struct Student *StudentLinkedList;// every bus will point to a set of passengers on it(so it's a linked list of another linked list).
+int Max(int Lhs, int Rhs);
 
-};
+AVLNode SingleRotateWithLeft(AVLNode K2);
 
+AVLNode SingleRotateWithRight(AVLNode K1);
 
-//------student linked list functions------------------
-Student *StuMakeEmpty(Student *L);
+AVLNode DoubleRotateWithLeft(AVLNode K3);
 
-int StuIsEmpty(Student *L);
+AVLNode DoubleRotateWithRight(AVLNode K1);
 
-int StuIsLast(Student *P, Student *L);
+AVLNode Insert(info data, AVLNode T);
 
-Student *StuFind(int Id, Student *L);
+void PrintInOrder(AVLNode t);
 
-Student *StuFindPrevious(int id, Student *L);
-
-void StuDelete(int id, Student *L);
-
-void StuInsert(int id, int date, char time[30], char from[30], char to[30], Student *L, Student *P);
-
-void StuPrintList(Student *L);
-
-void StuDeleteList(Student *L);
-
-int StuSize(Student *L);
-
-//--------bus linked list functions-------------
-Bus *busMakeEmpty(Bus *L);
-
-int busIsEmpty(Bus *L);
-
-int busIsLast(Bus *P, Bus *L);
-
-Bus *busFind(int num, Bus *L);
-
-Bus *busFindPrevious(int num, Bus *L);
-
-void busDelete(int num, Bus *L);
-
-void
-busInsert(int num, int date, char time[30], char from[30], char to[30], double price, int capacity, Bus *L, Bus *P);
-
-void busPrintList(Bus *L);
-
-void busDeleteList(Bus *L);
-
-int busSize(Bus *L);
-
-//----------------------------------------------------
+//----------------------- Declare global variables-----------------
+FILE *output = NULL;
+int top1 = -1;
+char stack1[size][size]; //stack--->to store codes we want to delete it from tree.
+AVLNode nameTree = NULL;
+char line[500]; //for delete line when read .
 int main() {
-    //declare (bus,student,unmatched) linked list, and make its header node.
-    Bus *bus = busMakeEmpty(NULL);
-    Student *mainStudentList = StuMakeEmpty(NULL);
-    Student *unmatchedStu = StuMakeEmpty(NULL);
+    AVLNode mainTree = NULL; //declare main avl tree(key=code).
     int choice;
-    int x, y, z;//this three variables to check if user enter the first three options more than once.
-    x = 0;
-    y = 0;
-    z = 0;
+
     do {
-        printMenu(); //show menu until the choice doesn't equal 9.
+        printMenu(); //show menu until the choice doesn't equal 11.
         scanf("%d", &choice);
-        if (choice == 1) {
-            if (x == 0) {
-                x += 1;
-                loadBuses(bus);
-            } else
-                printf("You cannot download the same file more than once.\n");
+        if (choice == 1) { //read data from file and creat an avl tree.
+            mainTree = loadCourses(mainTree);
+            PrintInOrder(mainTree);
         }
-        if (choice == 2) {
-            if (y == 0) {
-                y += 1;
-                loadStudents(mainStudentList);
-            } else
-                printf("You cannot download the same file more than once.\n");
+        if (choice == 2) { //insert new node  by user.
+            info d;
+            printf("Enter course name:");
+            gets(line);
+            gets(d.cName);
+            printf("Enter credit hours:");
+            scanf("%d", &d.hours);
+            printf("Enter course code:");
+            scanf("%s", d.cCode);
+            printf("Enter department:");
+            gets(line);
+            gets(d.department);
+            printf("Enter all the topics and put commas between them:");
+            gets(d.topic);
+            mainTree = Insert(d, mainTree);
         }
         if (choice == 3) {
-            if (x == 0 || y == 0) { //this condition because we can't assign before load bus and student info.
-                printf("You can't assign passengers before load buses and passengers.\n");
-            } else {
-                if (z == 0) {
-                    z += 1;
-                    MainAssignStudents(mainStudentList, bus, unmatchedStu); //assign function
-                    printBusesPassengers(bus); //print all buses info.
-
-                } else {
-                    printf("You cannot assign the same file more than once.\n");
-                }
-            }
+            mainTree = updateCourse(mainTree);
+            PrintInOrder(mainTree);
         }
-        if (choice == 4) {
-            int num;
-            printf("Enter bus number: ");
-            scanf("%d", &num);
-            printSpcBusInfo(bus, num); //print bus info.
+        if (choice == 4) { //print courses inorder (key:name)
+            creatNameTree(mainTree); //copy main tree to name tree and order it .
+            printInLexicographicOrder(nameTree); //print data inorder(left,root,right).
+            MakeEmpty(nameTree);//free-->copy the tree every time we choose 4 due to maybe different happen in tree.
         }
         if (choice == 5) {
-            printf("\nUnmatched Students: \n");
-            StuPrintList(unmatchedStu); //print unmatched linked list.
-        }
-        if (choice == 6) {// insert new passenger-->
-            printf("Enter id:\n ");
-            int id;
-            scanf("%d", &id);
-            printf("Enter date:\n ");
-            int date;
-            scanf("%d", &date);
-            char time[30];
-            printf("Enter time:\n ");
-            scanf("%s", time);
-            char from[30];
-            printf("Enter from destination:\n ");
-            scanf("%s", from);
-            char to[30];
-            printf("Enter to destination:\n ");
-            scanf("%s", to);
-            StuInsert(id, date, time, from, to, mainStudentList, mainStudentList);
-            Student *s = StuFind(id, mainStudentList); //find passenger to insert him to the suitable bus.
-            int flag = 0; //flag to know if the student assign in bus in exact time.
-            int flag2 = 0;//flag2 to know if the student assign in bus at another suitable time.
-            Bus *tempBus = bus->Next;//start from first node.
-            while (tempBus !=
-                   NULL) { //loop to pass over all buses to check whither its suitable (date ,exact time ,from,to).
-                if (assignStu(s, tempBus) == 1) {
-                    flag = 1;
-                    flag2 = 1;
-                    break;
-                }
-                tempBus = tempBus->Next; //go to the next bus
-            }
-            if (flag2 ==
-                0) { //if theirs no bus with exact date,time,from,to search for another bus with same date,from,to and another suitable time.
-                tempBus = bus->Next;
-                while (tempBus != NULL) {
-                    if (NotOnTimeAssign(s, tempBus) == 1) {
-                        flag = 1;
-                        flag2 = 1;
-                        break;
-                    }
-                    tempBus = tempBus->Next;
-                }
-            }
-            if (!(flag) && !(flag2)) { //if there is no matched bus to this passenger add him to unmatched linked list.
-                StuInsert(s->id, s->Date, s->time,
-                          s->stuFromDes, s->stuToDes, unmatchedStu, unmatchedStu);
-            }
-        }
-        if (choice == 7) { //delete passenger via id
-            printf("Enter passenger id: ");
-            int id;
-            scanf("%d", &id);
-            if (StuFind(id, mainStudentList) == NULL) { //check if it doesn't exist then find function will return Null.
-                printf("Passenger doesn't exist.\n");
+            printf("Enter course code: ");
+            char code[size];
+            scanf("%s", code);
+            AVLNode t = Find(code, mainTree); //find a node
+            if (t == NULL) {
+                printf("This course dose not exist.");
             } else {
-                StuDelete(id, mainStudentList); //delete passenger from main list
-                Bus *b = bus->Next;
-                int flag=0;
-                for (int i = 0; i <
-                                busSize(bus); i++) { //loop to find the bus that the passenger in it and delete passenger from the bus.
-                    if (StuFind(id, b->StudentLinkedList) != NULL) {
-//                        if ((b->space) < (b->capacity)) {
-                            b->space += 1; //space will increment by 1 when we delete passenger.
-                            StuDelete(id, b->StudentLinkedList); //delete passenger from bus.
-                            flag=1;
-                            break;
-//                        } else {
-//                            StuDelete(id, b->StudentLinkedList);
-//                            flag=1;
-//                            break;
-//                        }
-                    } else {
-                        b = b->Next;
-                    }
-                }
-                if(!(flag)){
-                    StuDelete(id,unmatchedStu);
-                }
+                printf("Topics: %s", t->data.topic);//print its topic.
             }
         }
-        if (choice == 8) {
-            printf("Enter bus number: ");
-            int num;
-            scanf("%d", &num);
-            Bus *b = busFind(num, bus);
-//            b->space += 1;
-            Student *s = b->StudentLinkedList;
-            busDelete(num, bus); //delete bus from linked list
-            MainAssignStudents(s, bus,
-                               unmatchedStu); //assign there student in another buses or in unmatched linked list.
-        }
+        if (choice == 6) {
 
-    } while (choice != 9);
-// delete lists
-    busDeleteList(bus);
-    StuDeleteList(mainStudentList);
-    StuDeleteList(unmatchedStu);
+            printf("Enter department: ");
+            char dep[size];
+            gets(line);
+            gets(dep);
+            int f = printSameDep(mainTree, dep);// print all courses that from the same department inorder
+            if (f == 0) { //f==0 means that there is no department like that.
+                printf("this department dose not exist.\n");
+            }
+
+        }
+        if (choice == 7) {//delete a course by code.
+            printf("Enter course code: ");
+            char code[size];
+            scanf("%s", code);
+            mainTree = delete(code, mainTree);
+            PrintInOrder(mainTree);
+        }
+        if (choice == 8) { //delete all courser that start with same latter(key:course name).
+            char x;
+            printf("Enter the letter: ");
+            scanf(" %c", &x);
+            pushCourseByLetter(mainTree, x); //push course codes the start with this latter.
+            mainTree = delCLetter(mainTree); //delete them.
+            PrintInOrder(mainTree);
+        }
+        if (choice == 9) { //delete all courses from the same department.
+            char dep[size];
+            printf("Enter department: ");
+            gets(line);
+            gets(dep);
+            pushCourseByDep(mainTree, dep); //push course codes  from this department.
+            mainTree = delCDep(mainTree); //delete them (pop)then delete from main tree.
+            PrintInOrder(mainTree);
+        }
+        if (choice == 10) {
+            save(mainTree); //save a new avl tree(after actions)in file.
+        }
+    } while (choice != 11); //Exit
+    MakeEmpty(mainTree);
+    if (choice == 11) {
+        exit(0);
+    }
     return 0;
 }
 
-//----------------Student linked list lib------------------
-Student *StuMakeEmpty(Student *L) { //make student linked list and return header node.
-    if (L != NULL)
-        StuDeleteList(L);
-    L = (Student *) malloc(sizeof(Student));
-    if (L == NULL)
-        printf("Out of memory!\n");
-    L->Next = NULL;
-    return L;
-
-}
-
-int StuIsEmpty(Student *L) { //if list is empty then first node will point to null.
-    return L->Next == NULL;
-}
-
-int StuIsLast(Student *P, Student *L) {
-    return P->Next == NULL;
-}
-
-Student *StuFind(int id, Student *L) { //find specific student from linked list through id.
-    Student *P;
-    P = L->Next;
-    while (P != NULL && P->id != id)
-        P = P->Next;
-    return P;
-}
-
-Student *StuFindPrevious(int Id, Student *L) { //find previous node ,it's important in delete methode.
-    Student *P;
-    P = L;
-    while (P->Next != NULL && P->Next->id != Id)
-        P = P->Next;
-    return P;
-}
-
-void StuDelete(int id, Student *L) { //delete specific student node via id.
-    Student *P, *temp;
-    P = StuFindPrevious(id, L);
-    if (!StuIsLast(P, L)) {
-        temp = P->Next;
-        P->Next = temp->Next; //bypass delete cell
-        free(temp);
+//----------------------AVL TREE LIBRARY------------------------------
+AVLNode MakeEmpty(AVLNode T) {
+    if (T != NULL) {
+        MakeEmpty(T->Left);
+        MakeEmpty(T->Right);
+        free(T);
     }
+    return NULL;
 }
 
-int StuSize(Student *L) {
-    Student *p = L->Next;
-    int count = 0;
-    while (p != NULL) {
-        count += 1;
-        p = p->Next;
-    }
-    return count;
-}
-
-void StuPrintList(Student *L) { //print student linked list info
-    Student *P = L;
-    if (StuIsEmpty(L))
-        printf("Empty list\n");
+AVLNode Find(char code[size], AVLNode T) {
+    if (T == NULL)
+        return NULL;
+    if (strcmp(code, T->data.cCode) < 0)
+        return Find(code, T->Left);
+    else if (strcmp(code, T->data.cCode) > 0)
+        return Find(code, T->Right);
     else
-        do {
-            P = P->Next;
-            printf("Student ID:%d\t", P->id);
-            printf("Date:%d\t", P->Date);
-            printf("Time:%s\t", P->time);
-            printf("From:%s\t", P->stuFromDes);
-            printf("To:%s\n", P->stuToDes);
-        } while (!StuIsLast(P, L));
-    printf("------------------------------------------------------\n");
+        return T;
 }
 
-void StuDeleteList(Student *L) { //delete all linked list expect header node.
-    Student *P;
-    Student *temp;
-    P = L->Next;
-    L->Next = NULL;
-    while (P != NULL) {
-        temp = P->Next;
-        free(P);
-        P = temp;
-    }
-}
-
-void
-StuInsert(int id, int date, char time[30], char from[30], char to[30], Student *L, Student *P) { //insert student node.
-    Student *temp;
-    temp = (Student *) malloc(sizeof(Student));
-    temp->id = id;
-    temp->Date = date;
-    strcpy(temp->time, time);
-    strcpy(temp->stuFromDes, from);
-    strcpy(temp->stuToDes, to);
-    temp->Next = P->Next;
-    P->Next = temp; //make p point to the new node.
-}
-
-//-------------------------------------Bus linked list lib-------------------------
-Bus *busMakeEmpty(Bus *L) { //creat bus linked list (return header node).
-    if (L != NULL)
-        busDeleteList(L);
-    L = (Bus *) malloc(sizeof(Bus));
-    if (L == NULL)
-        printf("Out of memory!\n");
-    L->Next = NULL;
-    return L;
-}
-
-int busIsEmpty(Bus *L) {
-    return L->Next == NULL;
-}
-
-int busIsLast(Bus *P, Bus *L) {
-    return P->Next == NULL;
-}
-
-Bus *busFind(int num, Bus *L) { //find specific bus by number
-    Bus *P;
-    P = L->Next;
-    while (P != NULL && P->num != num)
-        P = P->Next;
-    return P;
-}
-
-
-Bus *busFindPrevious(int num, Bus *L) {
-    Bus *P;
-    P = L;
-    while (P->Next != NULL && P->Next->num != num) {
-        P = P->Next;
-    }
-    return P;
-}
-
-void busDelete(int num, Bus *L) {
-    Bus *P, *temp;
-    P = busFindPrevious(num, L);
-    if (!busIsLast(P, L)) {
-        temp = P->Next;
-        P->Next = temp->Next; //bypass delete cell
-        free(temp);
-    }
-}
-
-void
-busInsert(int num, int date, char time[30], char from[30], char to[30], double price, int capacity, Bus *L, Bus *P) {
-    Bus *temp;
-    temp = (Bus *) malloc(sizeof(Bus));
-    temp->num = num;
-    temp->Date = date;
-    strcpy(temp->time, time);
-    strcpy(temp->busFromDes, from);
-    strcpy(temp->busToDes, to);
-    temp->price = price;
-    temp->capacity = capacity;
-    temp->space = capacity; //space initial value equal capacity
-    temp->Next = P->Next;
-    temp->StudentLinkedList = StuMakeEmpty(
-            NULL);//every bus has a student linked list, so we make it when insert each bus.
-    P->Next = temp;
-}
-
-void busPrintList(Bus *L) {
-    Bus *P = L;
-    if (busIsEmpty(L))
-        printf("Empty list\n");
+AVLNode FindMin(AVLNode T) {
+    if (T == NULL)
+        return NULL;
+    else if (T->Left == NULL)
+        return T;
     else
-        do { //loop while the last node
-            P = P->Next;
-            printf("Bus Number:%d\t", P->num);
-            printf("Date:%d\t", P->Date);
-            printf("Time:%s\t", P->time);
-            printf("From:%s\t", P->busFromDes);
-            printf("To:%s\t", P->busToDes);
-            printf("Price:%.1f\t", P->price);
-            printf("Capacity:%d\t", P->capacity);
-            printf("Space:%d\n", P->space);
-            printf("--------------------------------------------------------------------------\n");
-        } while (!busIsLast(P, L));
-    printf("\n");
+        return FindMin(T->Left);
 }
 
-void busDeleteList(Bus *L) { //delete bus list
-    Bus *P;
-    Bus *temp;
-    P = L->Next;
-    L->Next = NULL;
-    while (P != NULL) {
-        temp = P->Next;
-        free(P);
-        P = temp;
+AVLNode FindMax(AVLNode T) {
+    if (T != NULL)
+        while (T->Right != NULL)
+            T = T->Right;
+
+    return T;
+}
+
+int Height(AVLNode P) {
+    if (P == NULL)
+        return -1;
+    else
+        return P->Height;
+}
+
+int Max(int Lhs, int Rhs) {
+    return Lhs > Rhs ? Lhs : Rhs;
+}
+
+AVLNode SingleRotateWithLeft(AVLNode K2) {
+    AVLNode K1;
+
+    K1 = K2->Left;
+    K2->Left = K1->Right;
+    K1->Right = K2;
+
+    K2->Height = Max(Height(K2->Left), Height(K2->Right)) + 1;
+    K1->Height = Max(Height(K1->Left), K2->Height) + 1;
+
+    return K1;  /* New root */
+}
+
+AVLNode SingleRotateWithRight(AVLNode K1) {
+    AVLNode K2;
+
+    K2 = K1->Right;
+    K1->Right = K2->Left;
+    K2->Left = K1;
+
+    K1->Height = Max(Height(K1->Left), Height(K1->Right)) + 1;
+    K2->Height = Max(Height(K2->Right), K1->Height) + 1;
+
+    return K2;  /* New root */
+}
+
+AVLNode DoubleRotateWithLeft(AVLNode K3) {
+    /* Rotate between K1 and K2 */
+    K3->Left = SingleRotateWithRight(K3->Left);
+
+    /* Rotate between K3 and K2 */
+    return SingleRotateWithLeft(K3);
+}
+
+AVLNode DoubleRotateWithRight(AVLNode K1) {
+    /* Rotate between K3 and K2 */
+    K1->Right = SingleRotateWithLeft(K1->Right);
+
+    /* Rotate between K1 and K2 */
+    return SingleRotateWithRight(K1);
+}
+
+AVLNode Insert(info data, AVLNode T) {
+    if (T == NULL) {
+        /* Create and return a one-node tree */
+        T = malloc(sizeof(struct AVLnode));
+        if (T == NULL)
+            printf("Out of space!!!");
+        else {
+            strcpy(T->data.cName, data.cName);
+            T->data.hours = data.hours;
+            strcpy(T->data.cCode, data.cCode);
+            strcpy(T->data.topic, data.topic);
+            strcpy(T->data.department, data.department);
+            T->Height = 0;
+            T->Left = T->Right = NULL;
+        }
+    } else if (strcmp(data.cCode, T->data.cCode) < 0) {
+        T->Left = Insert(data, T->Left);
+        if (Height(T->Left) - Height(T->Right) == 2)
+            //X < T->Left->Element
+            if (strcmp(data.cCode, T->Left->data.cCode) < 0)
+                T = SingleRotateWithLeft(T);
+            else
+                T = DoubleRotateWithLeft(T);
+    } else if (strcmp(data.cCode, T->data.cCode) > 0) {
+        T->Right = Insert(data, T->Right);
+        if (Height(T->Right) - Height(T->Left) == 2)
+            //X > T->Right->Element
+            if (strcmp(data.cCode, T->Right->data.cCode) > 0) { T = SingleRotateWithRight(T); }
+            else { T = DoubleRotateWithRight(T); }
+    }
+    /* Else X is in the tree already; we'll do nothing */
+
+    T->Height = Max(Height(T->Left), Height(T->Right)) + 1;
+    return T;
+}
+
+void PrintInOrder(AVLNode mainTree) { //print nodes (left,root,right).
+    if (mainTree != NULL) {
+        PrintInOrder(mainTree->Left);
+        printf("Course: %s,Credit Hours:%d, Course Code: %s ,Department: %s,Topics: %s \n", mainTree->data.cName,
+               mainTree->data.hours, mainTree->data.cCode, mainTree->data.department, mainTree->data.topic);
+        printf("----------------------------------------------------------------------------\n");
+        PrintInOrder(mainTree->Right);
     }
 }
 
-int busSize(Bus *L) { //return how many nodes in bus linked list
-    Bus *p = L->Next;
-    int count = 0;
-    while (p != NULL) {
-        count += 1;
-        p = p->Next;
-    }
-    return count;
+void printMenu() { //show menu
+    printf("1. Read the file courses.txt file and create the tree.\n"
+           "2. Insert a new course .\n"
+           "3. Find a course and support updating of its information. \n"
+           "4. List courses in lexicographic order with their associated\n"
+           "information (credit hours, IDs, and topics). \n"
+           "5. List all topics associated with a given course. \n"
+           "6. List all courses in lexicographic order that belong to the same \n"
+           "department.\n"
+           "7. Delete a course.\n"
+           "8. Delete all courses that start with a specific letter. \n"
+           "9. Delete all courses belong to a given department.\n"
+           "10. Save all courses in file offered_courses.txt\n"
+           "11.Exit\n"
+    );
 }
 
-//------------------------------------
-void printMenu() { //print menu options.
-    printf("Enter the number of the option you want to perform from the menu: \n");
-    printf("1. Load the bus information file\n"
-           "2. Load the passenger information file\n"
-           "3. Assign passengers and print assignment information of all"
-           "busses\n"
-           "4. Print a specific bus information along with its passengers \n"
-           "information (names and IDs)\n"
-           "5. Print unmatched passengers\n"
-           "6. Add new passenger\n"
-           "7. Delete passenger\n"
-           "8. Delete bus number\n"
-           "9. Exit\n");
-}
-
-void loadBuses(Bus *bus) {
-    FILE *input = fopen("busses.txt",
+AVLNode loadCourses(AVLNode mainTree) {
+    info data; //data for every line we read.
+    FILE *input = fopen("courses.txt",
                         "r"); //open the input file and put it in read mode.
-    char line[size]; //array for the lines(pointer);
+    char line[fileSize]; //array for the lines(pointer);
     char *value;
     if (input == NULL) {
         printf("Can't opening this file.");
     }
-    while (fgets(line, size, input)) {//read from the input file -->using fgets from string library.
-
-        value = strtok(line, "#"); //split first value in line by #
-        int num = atoi(value); //store it in num
-        value = strtok(NULL, "#"); //split the next value from null because stroke but null character after first split
-        int date = atoi(value);
+    //while we dont reach the end of file read line by line and split data then store in  data filed.
+    while (fgets(line, 1000, input)) {//read from the input file -->using fgets from string library.
+        value = strtok(line, ":"); //split first value in line by :
+        strcpy(data.cName, value);
         value = strtok(NULL, "#");
-        char time[30];
-        strcpy(time, value);
+        data.hours = atoi(value);
         value = strtok(NULL, "#");
-        char from[30];
-        strcpy(from, value);
-        value = strtok(NULL, "#");
-        char to[30];
-        strcpy(to, value);
-        value = strtok(NULL, "#");
-        double price = atof(value);
-        value = strtok(NULL, "#");
-        value[strcspn(value, "\n")] = 0; //fgets but '\n' to string after read a full line so i remove it using strcnpn.
-        int capacity = atoi(value);
-        busInsert(num, date, time, from, to, price, capacity, bus, bus);
-    }
-    fclose(input); //close input file.
-    busPrintList(bus);//print all buses info
-}
-
-void loadStudents(Student *mainStudentList) { //read passengers file and store it in student linked list
-    FILE *input = fopen("passengers.txt",
-                        "r"); //open the input file and put it in read mode.
-    char line[size]; //array for the lines(pointer);
-    char *value;
-    if (input == NULL) { //if file doesn't exist.
-        printf("Can't opening this file.");
-    }
-    while (fgets(line, size, input)) {//read from the input file -->using gets from string library.
-        //split each line by #
-        value = strtok(line, "#");
-        int id = atoi(value);
-        value = strtok(NULL, "#");
-        int date = atoi(value);
-        value = strtok(NULL, "#");
-        char time[30];
-        strcpy(time, value);
-        value = strtok(NULL, "#");
-        char from[30];
-        strcpy(from, value);
-        value = strtok(NULL, "#");
-        char to[30];
+        strcpy(data.cCode, value);
+        value = strtok(NULL, "/");
         value[strcspn(value, "\n")] = 0;
-        strcpy(to, value);
-        StuInsert(id, date, time, from, to, mainStudentList, mainStudentList); //insert node.
+        strcpy(data.department, value);
+        value = strtok(NULL, "\n");
+        value[strcspn(value, "\n")] = 0;
+        strcpy(data.topic, value);
+        mainTree = Insert(data, mainTree); //insert new node(by call insert method).
     }
     fclose(input); //close input file.
-    StuPrintList(mainStudentList);
+    return mainTree;
 }
 
-void MainAssignStudents(Student *mainStudentList, Bus *bus,
-                        Student *unmatchedStu) { //this method to assign each passenger in suitable bus or in unmatched linked list.
-    Student *tempStu = mainStudentList->Next;
-    while (tempStu != NULL) { //loop to pass over all students
-        int flag = 0; //flag to know if the student assign in bus in exact time.
-        int flag2 = 0;
-        Bus *tempBus = bus->Next;//in every new loop we start from first node
-        while (tempBus != NULL) {
-            if (assignStu(tempStu, tempBus) == 1) { //call assign student function
-                flag = 1;
-                flag2 = 1;
-                break; //exit the loop when assign success
+AVLNode updateCourse(AVLNode mainTree) { //update by code value.
+    AVLNode t1; //for the node we want to update it.
+    char code[20];
+    printf("Enter course code: ");
+    scanf("%s", code);
+    t1 = Find(code, mainTree); //find the node by call find method from avl tree lip.
+    if (t1 == NULL) {
+        printf("Course dose not exist.\n");
+    } else {
+        int c;
+        do {
+            printf("1.Update course name\n");
+            printf("2.Update course hours\n");
+            printf("3.Update topics\n");
+            printf("4.Update course department\n");
+            printf("5.Update course code\n");
+            printf("6.Exist\n");
+            scanf("%d", &c);
+            if (c == 1) { //upadte name
+                printf("Enter a new course name: ");
+                scanf("%s", t1->data.cName);
             }
-            tempBus = tempBus->Next; //if this bus not suitable go to the next bus.
-        }
-        if (flag2 == 0) { //if the first assign doesn't success  try if there is another bus soon
-            tempBus = bus->Next;
-            while (tempBus != NULL) {
-                if (NotOnTimeAssign(tempStu, tempBus) == 1) {
-                    flag = 1;
-                    flag2 = 1;
-                    break;
-                }
-                tempBus = tempBus->Next; //go to the next bus
+            if (c == 2) { //update hours.
+                printf("Enter hours: ");
+                scanf("%d", &t1->data.hours);
             }
+            if (c == 3) {//update topics
+                printf("Enter a new topics: ");
+                scanf("%s", t1->data.topic);
+            }
+            if (c == 4) { //update department
+                printf("Enter department: ");
+                scanf("%s", t1->data.department);
+            }
+            if (c == 5) { //update code
+                printf("Enter a new code: ");
+                char code1[size];
+                scanf("%s", code1);
+                info d = t1->data;
+                strcpy(d.cCode, code1);
+                mainTree = delete(code, mainTree); //delete the current node from tree
+                mainTree = Insert(d, mainTree); //then add it again with a new code(so its order in tree will change).
+            }
+
+        } while (c != 6);
+    }
+    return mainTree;
+}
+
+AVLNode delete(char code[size], AVLNode node) {
+
+
+    if (node == NULL) {
+        printf("Course dose not exist.\n");
+        return node;
+    } else if (strcmp(code, node->data.cCode) > 0)
+        node->Right = delete(code, node->Right);//if the  node is more than the parent
+    else if (strcmp(code, node->data.cCode) < 0)
+        node->Left = delete(code, node->Left);//if the  node is less than the parent
+    else //when found the node
+    {
+
+
+        if (node->Right != NULL && node->Left != NULL) //when there is 2 child .
+        {
+
+            AVLNode minRight = FindMin(node->Right);
+            AVLNode temp = minRight;
+
+            //replace the deleted node
+            node->data = minRight->data;
+
+            //free the Successor node
+            node->Right = delete(minRight->data.cCode, node->Right);
+
+        } else if (node->Right == NULL && node->Left != NULL) //for left child
+        {
+
+            AVLNode temp = node;
+            node = node->Left;
+            free(temp);
+
+        } else if (node->Right != NULL && node->Left == NULL) //for right child.
+        {
+
+            AVLNode temp = node;
+            node = node->Right;
+            free(temp);
+
+        } else //in leaf node case
+        {
+
+            AVLNode temp = node;
+            node = NULL;
+            free(temp);
+            return node;
+
         }
-        if (!(flag) && !(flag2)) { //if nether first assign nor second success but passenger in unmatched linked list .
-            StuInsert(tempStu->id, tempStu->Date, tempStu->time,
-                      tempStu->stuFromDes, tempStu->stuToDes, unmatchedStu, unmatchedStu);
+        node->Height = Max(Height(node->Right), Height(node->Left)) + 1;  //update the height
+        int balanced = balance(node);
+        // If this node becomes unbalanced we will balance it using 4 cases.
+
+
+        //right rotation case
+        if (balanced > 1 && (strcmp(code, node->Left->data.cCode) < 0))
+            node = SingleRotateWithRight(node);
+
+        //left rotation case
+        if (balanced < -1 && (strcmp(code, node->Right->data.cCode) > 0))
+            node = SingleRotateWithLeft(node);
+
+        // right left rotation case .
+        if (balanced < -1 && (strcmp(node, node->Right->data.cCode) < 0)) {
+            node->Right = SingleRotateWithRight(node->Right); // -->become right right
+            node = SingleRotateWithLeft(node);
+
         }
-        tempStu = tempStu->Next; //go to the next student.
+
+        // left right rotation case .
+        if (balanced > 1 && (strcmp(code, node->Left->data.cCode) > 0)) {
+            node->Left = SingleRotateWithLeft(node->Left);// -->become left left.
+            node = SingleRotateWithRight(node);
+        }
+
+
+    }
+
+
+    return node;
+}
+
+int balance(AVLNode node) { //return balance for the node
+
+    if (node == NULL)
+        return 0;
+
+    return Height(node->Left) - Height(node->Right); //balance equation.
+
+}
+
+void printPreOrderINFile(AVLNode mainTree) { //print nodes preorder(root,left,right) in file
+
+    if (mainTree != NULL) {
+        fprintf(output, "%s:%d#%s#%s/%s\n", mainTree->data.cName,
+                mainTree->data.hours, mainTree->data.cCode, mainTree->data.department, mainTree->data.topic);
+        printPreOrderINFile(mainTree->Left);
+        printPreOrderINFile(mainTree->Right);
+    }
+
+}
+
+void save(AVLNode mainTree) { //-->print an avl tree in file in preorder
+    output = fopen("offered_courses.txt", "w"); //open file and put it in write mood.
+    if (mainTree == NULL) { //if the tree is null.
+        printf("Empty avl tree\n");
+    } else {
+        printPreOrderINFile(mainTree); //call the print method to print the tree in file
+        fclose(output); //close output file.
+    }
+
+}
+
+AVLNode InsertByName(info data,
+                     AVLNode T) { //this method is same as insert methode but the key is name(i need it to copy the main tree to the name tree).
+    if (T == NULL) {
+        /* Create and return a one-node tree */
+        T = malloc(sizeof(struct AVLnode));
+        if (T == NULL)
+            printf("Out of space!!!");
+        else {
+            strcpy(T->data.cName, data.cName);
+            T->data.hours = data.hours;
+            strcpy(T->data.cCode, data.cCode);
+            strcpy(T->data.topic, data.topic);
+            strcpy(T->data.department, data.department);
+            T->Height = 0;
+            T->Left = T->Right = NULL;
+        }
+    } else if (strcmp(data.cName, T->data.cName) < 0) {
+        T->Left = Insert(data, T->Left);
+        if (Height(T->Left) - Height(T->Right) == 2)
+            //X < T->Left->Element
+            if (strcmp(data.cName, T->Left->data.cName) < 0)
+                T = SingleRotateWithLeft(T);
+            else { T = DoubleRotateWithLeft(T); }
+    } else if (strcmp(data.cName, T->data.cName) > 0) {
+        T->Right = Insert(data, T->Right);
+        if (Height(T->Right) - Height(T->Left) == 2)
+            //X > T->Right->Element
+            if (strcmp(data.cName, T->Right->data.cName) > 0) { T = SingleRotateWithRight(T); }
+            else { T = DoubleRotateWithRight(T); }
+    }
+    /* Else X is in the tree already; we'll do nothing */
+
+    T->Height = Max(Height(T->Left), Height(T->Right)) + 1;
+    return T;
+}
+
+void creatNameTree(AVLNode mainTree) { //traversal node node in mainTree and insert each node in name tree.
+
+    if (mainTree != NULL) {
+        creatNameTree(mainTree->Left);
+        nameTree = InsertByName(mainTree->data, nameTree); //call insertByName method to insert the node.
+        creatNameTree(mainTree->Right);
     }
 }
 
+void printInLexicographicOrder(AVLNode nameT) { //print node inorder(left,root,right).
 
-int assignStu(Student *tempStu,
-              Bus *tempBus) { //this method to check if the student node suitable the bus node via(date ,time,from ,to , and capacity available).
+    if (nameT == NULL) //Null tree case
+        printf("Empty tree.\n");
+    else
+        PrintInOrder(nameT); //call print method
 
-    if (tempBus->space == 0) //if there is no space available
-        return 0;
-    if (tempBus->Date == tempStu->Date && strcmp(tempStu->time, tempBus->time) == 0 &&
-        strcmp(tempBus->busFromDes, tempStu->stuFromDes) == 0 && strcmp(tempBus->busToDes, tempStu->stuToDes) == 0) {
-        tempBus->space -= 1; //decrement space available in bus by 1.
-        StuInsert(tempStu->id, tempStu->Date, tempStu->time, tempStu->stuFromDes, tempStu->stuToDes,
-                  tempBus->StudentLinkedList,
-                  tempBus->StudentLinkedList); //insert passenger in bus student linked list .
+}
 
+int printSameDep(AVLNode mainTree, char dep[size]) { //this method print all courses from same department inorder.
+    int flag = 0; //if 0->dose not exit ,1->exist
+    if (mainTree != NULL) {
+        printSameDep(mainTree->Left, dep);
+        if (strcmp(dep, mainTree->data.department) ==
+            0) { //when the department equal any course department print its information.
+            printf("Course: %s,Credit Hours:%d, Course Code: %s ,Department: %s,Topics: %s \n", mainTree->data.cName,
+                   mainTree->data.hours, mainTree->data.cCode, mainTree->data.department, mainTree->data.topic);
+            printf("--------------------------------------------------------------------------------------\n");
+            flag = 1;
+        }
+        printSameDep(mainTree->Right, dep);
+
+
+    }
+    return flag;
+}
+
+void pushCourseByDep(AVLNode mainTree,
+                     char dep[size]) {  //-->to push all codes for all courses that have the same department to the stack1 to delete it later.
+
+
+    if (mainTree != NULL) {
+
+        if (strcmp(dep, mainTree->data.department) == 0) {
+            char code[size];
+            strcpy(code, mainTree->data.cCode);
+            push(code);//push code
+        }
+        pushCourseByDep(mainTree->Left, dep);
+        pushCourseByDep(mainTree->Right, dep);
+    }
+
+}
+
+AVLNode delCDep(AVLNode mainTree) { //pop codes from stack then delete them one by one
+    if (isempty()) {
+        printf("This department dose not exist.\n");
+    } else {
+        while (!isempty()) {
+            mainTree = delete(pop(), mainTree); //pop and delete .
+        }
+    }
+    return mainTree;
+}
+
+void pushCourseByLetter(AVLNode mainTree,
+                        char x) { //-->find all courses that's start of specific later and push its code in the stack to delete them later.
+
+
+    if (mainTree != NULL) {
+        char m = mainTree->data.cName[0]; //store fist char if the course name in m.
+        if (x == m) { //compare characters.
+            char code[size];
+            strcpy(code, mainTree->data.cCode);
+            push(code); //push node code if the condition is true.
+        }
+        pushCourseByLetter(mainTree->Left, x);
+        pushCourseByLetter(mainTree->Right, x);
+    }
+
+}
+
+AVLNode delCLetter(AVLNode mainTree) { //-->pop from stack then delete node from the mainTree.
+    if (isempty()) { //if empty ->there is no coursers start with this latter.
+        printf("There are no courses that start with this letter .\n");
+    } else {
+        while (!isempty()) {
+            mainTree = delete(pop(), mainTree); //pop the code then delete it.
+        }
+    }
+    return mainTree;
+}
+
+//------------------------------stack lip-----------------------------
+int isFull() {
+    if (top1 == size - 1) { //is full case-> then the top will equal the size-1.
         return 1;
-    }
-    return 0;
-}
-
-int NotOnTimeAssign(Student *tempStu,
-                    Bus *tempBus) { //this method to check if the student node suitable bus node via (date,from,to,space) but time can be different but before time bus.
-    int hourS, minS, hourB, minB;
-    char *value;
-    char time[6];
-    //split time -->
-    strcpy(time, tempStu->time);
-    value = strtok(time, ":");
-    hourS = atoi(value);
-    value = strtok(NULL, ":");
-    minS = atoi(value);
-    strcpy(time, tempBus->time);
-    value = strtok(time, ":");
-    hourB = atoi(value);
-    value = strtok(NULL, ":");
-    minB = atoi(value);
-    if (tempBus->space == 0)
+    } else {
         return 0;
-    //student node will assign in first bus found with suitable time.
-    if (tempBus->Date == tempStu->Date &&
-        strcmp(tempBus->busFromDes, tempStu->stuFromDes) == 0 && strcmp(tempBus->busToDes, tempStu->stuToDes) == 0) {
-        if (hourS < hourB || ((hourB == hourS) && (minS < minB))) {
-            tempBus->space -= 1;
-            StuInsert(tempStu->id, tempStu->Date, tempStu->time, tempStu->stuFromDes, tempStu->stuToDes,
-                      tempBus->StudentLinkedList, tempBus->StudentLinkedList); //insert passenger in bus .
-
-            return 1;
-        }
-    }
-    return 0;
-}
-
-void printBusesPassengers(Bus *bus) { //this method will pass all buses nods and print its info with passengers.
-    Bus *tempBus = bus->Next;
-    int length = busSize(bus);
-    for (int i = 0; i < length; i++) { //loop will pass all buses(bus linked list length)
-        printf("--------------------------------------------------------------------------------\n");
-        printf("Bus number %d:-->\n Date: %d , Time: %s ,From: %s ,To: %s ,Price: %.1f ,Capacity: %d \n", tempBus->num,
-               tempBus->Date, tempBus->time, tempBus->busFromDes, tempBus->busToDes, tempBus->price, tempBus->capacity);
-        printf("Passengers' information:\n ");
-        if (StuIsEmpty(tempBus->StudentLinkedList)) { //if there is no student.
-            printf("No passengers.\n");
-        } else {
-            StuPrintList(tempBus->StudentLinkedList);
-        }
-        tempBus = tempBus->Next; //go to the next bus.
     }
 }
 
-void printSpcBusInfo(Bus *bus,
-                     int num) { //this bus take a bus number and found it then print its info with its passengers' info if exist .
-    Bus *b1 = busFind(num, bus); //first find the bus node if exist using find function.
-    if (b1 != NULL) {
-        printf("-------------------------------------------------------------------------------------\n");
-        printf("Bus Number: %d:-->\nDate: %d , Time: %s ,From: %s ,To: %s ,Price: %.1f ,Capacity: %d, Space: %d \n",
-               b1->num,
-               b1->Date, b1->time, b1->busFromDes, b1->busToDes, b1->price, b1->capacity, b1->space);
-        printf("Passengers' information:\n ");
-        if (StuIsEmpty(b1->StudentLinkedList)) {
-            printf("No passengers.\n");
-        } else {
-            StuPrintList(b1->StudentLinkedList);
-        }
-    } else //if bus not exist.
-        printf("Bus doesn't exist.\n");
+int isempty() {
+    if (top1 == -1) { //when top=-1 ->that means stack is empty.
+        return 1;
+    } else {
+        return 0;
+    }
 }
+
+void push(char code[]) { //send a code and push it in the stack;
+    if (isFull()) {
+        printf("Stack is full");
+    } else {
+        top1++;//increment top by one to add in the top of the stack
+        strcpy(stack1[top1], code); //add it.
+    }
+}
+
+char *pop() { //pop code from the top and return its value
+    if (isempty()) {
+        printf("Stack is empty");
+    } else {
+        char *c = malloc(size + 1); //store data in the heap of the memory.
+        strcpy(c, stack1[top1]);//copy the top value to c .
+        top1--;//pop
+        return c; //return code
+    }
+}
+
